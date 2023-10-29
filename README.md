@@ -4,6 +4,13 @@ This is a [Skip](https://skip.tools) Swift/Kotlin library project that
 provides the ability to play Lottie animations in dual-platform Skip apps
 for iOS and Android.
 
+
+<video id="intro_video" style="width: 100%" controls autoplay>
+  <source style="width: 100;" src="https://assets.skip.tools/videos/SkipMotionExample.mov" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+
 On the Kotlin side, SkipMotion uses the [lottie-ios](https://github.com/airbnb/lottie-ios)
 package, and on Android it uses the [lottie-android](https://github.com/airbnb/lottie-android).
 
@@ -23,7 +30,7 @@ struct ContentView: View {
         VStack(alignment: .center) {
             Text("Skip Motion Animation")
                 .font(.largeTitle)
-            try! MotionView(lottie: lottieData)
+            MotionView(lottie: lottieData)
         }
     }
 }
