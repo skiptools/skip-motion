@@ -52,6 +52,17 @@ file an [issue](https://source.skip.tools/skip-motion/issues)
 with needs and requests.
 
 
+## Size
+
+Adding `SkipMotion` as a dependency will add around 1MB to the
+size of the release `.ipa` and `.apk` artifacts for your project.
+
+## Example
+
+See the [LottieDemo](https://source.skip.tools/skipapp-lottiedemo/releases)
+project for an example of using `SkipMotion` in a Skip App project.
+
+
 ## Building
 
 This project is a Swift Package Manager module that uses the
