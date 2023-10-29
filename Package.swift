@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 5.9
 import PackageDescription
 
 let package = Package(
@@ -10,10 +10,11 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://source.skip.tools/skip.git", from: "0.7.1"),
-        .package(url: "https://source.skip.tools/skip-foundation.git", from: "0.3.0"),
+        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.3.0"),
+        .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.3.3"),
     ],
     targets: [
-    .target(name: "SkipMotion", dependencies: [.product(name: "SkipFoundation", package: "skip-foundation")], plugins: [.plugin(name: "skipstone", package: "skip")]),
+    .target(name: "SkipMotion", dependencies: [.product(name: "SkipUI", package: "skip-ui"), .product(name: "Lottie", package: "lottie-ios")], plugins: [.plugin(name: "skipstone", package: "skip")]),
     .testTarget(name: "SkipMotionTests", dependencies: [
         "SkipMotion",
         .product(name: "SkipTest", package: "skip")

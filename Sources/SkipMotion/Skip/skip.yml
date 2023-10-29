@@ -1,1 +1,12 @@
 # Configuration file for https://skip.tools project
+
+#skip:
+#  package: 'skip.motion'
+
+# the blocks to add to the build.gradle.kts
+build:
+  contents:
+    - block: 'dependencies'
+      export: false
+      contents:
+        - 'implementation("com.airbnb.android:lottie-compose:6.1.0")'
