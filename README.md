@@ -42,6 +42,16 @@ let lottieData = """
 ```
 
 
+## Status
+
+SkipMotion is in a very early stage, and lack any playback
+controls or other customization of the animations.
+
+You are encouraged to contribute to the project or
+file an [issue](https://source.skip.tools/skip-motion/issues)
+with needs and requests.
+
+
 ## Building
 
 This project is a Swift Package Manager module that uses the
