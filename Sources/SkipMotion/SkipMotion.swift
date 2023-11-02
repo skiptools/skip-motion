@@ -25,7 +25,7 @@ public struct MotionView : View {
     let lottieData: Data
 
     public init(lottie lottieData: Data) {
-        self.lottieData = lottieData;
+        self.lottieData = lottieData
     }
 
     public var body: some View {
