@@ -57,7 +57,10 @@ struct LottieMotionView : View {
     #endif
 }
 
-/// A container for Lottie JSON data.
+/// A container for Lottie data, which is an After Effects/Bodymovin JSON composition model.
+///
+/// This is the serialized model from which the animation will be created. It is designed to be stateless, cacheable, and shareable.
+/// The format is described at [https://lottie.github.io/lottie-spec/](https://lottie.github.io/lottie-spec/).
 ///
 /// In Swift, this wraps a `Lottie.LottieAnimation` and on Android it wraps a `com.airbnb.lottie.LottieComposition`.
 public struct LottieContainer {
@@ -67,7 +70,7 @@ public struct LottieContainer {
     let lottieComposition: LottieComposition
     #endif
 
-    /// Creates a MotionView with the data represented by the given Lottie JSON.
+    /// Creates a Lottie container with the data represented by the given Lottie JSON.
     public init(data lottieData: Data) throws {
         #if !SKIP
         self.lottieAnimation = try LottieAnimation.from(data: lottieData)
@@ -110,7 +113,11 @@ public struct LottieContainer {
         lottieAnimation.bounds
         #else
         let rect: android.graphics.Rect = lottieComposition.bounds
-        return CGRect(x: rect.left, y: rect.top, width: rect.right, height: rect.bottom)
+        let x: Int = rect.left
+        let y: Int = rect.top
+        let width: Int = rect.right - x
+        let height: Int = rect.bottom - y
+        return CGRect(x: x, y: y, width: width, height: height)
         #endif
     }
 }
