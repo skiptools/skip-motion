@@ -29,32 +29,19 @@ public struct MotionView : View {
     }
 
     public var body: some View {
-        try! LottieMotionView(lottie: lottieData)
+        try! LottieMotionView(container: LottieContainer(data: lottieData))
         #if SKIP
         .Compose(composectx)
         #endif
     }
 }
 
-private struct LottieMotionView : View {
-    #if !SKIP
-    let lottieAnimation: LottieAnimation
-    #else
-    let lottieComposition: LottieComposition
-    #endif
-
-    /// Creates a MotionView with the data represented by the given Lottie JSON.
-    init(lottie lottieData: Data) throws {
-        #if !SKIP
-        self.lottieAnimation = try LottieAnimation.from(data: lottieData)
-        #else
-        self.lottieComposition = try LottieCompositionFactory.fromJsonInputStreamSync(lottieData.platformData.inputStream(), nil).getValue()!
-        #endif
-    }
+struct LottieMotionView : View {
+    let container: LottieContainer
 
     #if !SKIP
     var body: some View {
-        LottieView(animation: self.lottieAnimation)
+        LottieView(animation: container.lottieAnimation)
             .resizable()
             .playing(loopMode: .loop)
     }
@@ -62,10 +49,68 @@ private struct LottieMotionView : View {
     @Composable override func ComposeContent(context: ComposeContext) {
         let contentContext = context.content()
         ComposeContainer(modifier: context.modifier) { modifier in
-            LottieAnimation(self.lottieComposition,
+            LottieAnimation(container.lottieComposition,
                             modifier: modifier.fillMaxSize(),
                             iterations: LottieConstants.IterateForever)
         }
     }
     #endif
+}
+
+/// A container for Lottie JSON data.
+///
+/// In Swift, this wraps a `Lottie.LottieAnimation` and on Android it wraps a `com.airbnb.lottie.LottieComposition`.
+public struct LottieContainer {
+    #if !SKIP
+    let lottieAnimation: LottieAnimation
+    #else
+    let lottieComposition: LottieComposition
+    #endif
+
+    /// Creates a MotionView with the data represented by the given Lottie JSON.
+    public init(data lottieData: Data) throws {
+        #if !SKIP
+        self.lottieAnimation = try LottieAnimation.from(data: lottieData)
+        #else
+        let compositionResult = try LottieCompositionFactory.fromJsonInputStreamSync(lottieData.platformData.inputStream(), nil)
+
+        guard let composition = compositionResult.getValue() else {
+            throw compositionResult.getException() ?? IllegalArgumentException("Unable to load composition from data")
+        }
+        self.lottieComposition = composition
+        #endif
+    }
+
+    public var duration: TimeInterval {
+        #if !SKIP
+        lottieAnimation.duration
+        #else
+        lottieComposition.duration.toDouble() / 1000.0 // kotlin.Float milliseconds
+        #endif
+    }
+
+    public var startFrame: CGFloat {
+        #if !SKIP
+        lottieAnimation.startFrame
+        #else
+        lottieComposition.startFrame.toDouble()
+        #endif
+    }
+
+    public var endFrame: CGFloat {
+        #if !SKIP
+        lottieAnimation.endFrame
+        #else
+        lottieComposition.endFrame.toDouble()
+        #endif
+    }
+
+    public var bounds: CGRect {
+        #if !SKIP
+        lottieAnimation.bounds
+        #else
+        let rect: android.graphics.Rect = lottieComposition.bounds
+        return CGRect(x: rect.left, y: rect.top, width: rect.right, height: rect.bottom)
+        #endif
+    }
 }

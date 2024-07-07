@@ -1,3 +1,19 @@
+## 0.3.0
+
+Released 2024-07-07
+
+  - Dependency bump
+  - Bump dependencies
+  - ci: update workflow actions location
+
+## 0.2.1
+
+Released 2024-07-07
+
+  - Dependency bump
+  - Bump dependencies
+  - ci: update workflow actions location
+
 ## 0.2.0
 
 Released 2024-02-05
