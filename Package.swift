@@ -6,11 +6,11 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.iOS(.v16), .macOS(.v13), .tvOS(.v16), .watchOS(.v9), .macCatalyst(.v16)],
     products: [
-    .library(name: "SkipMotion", targets: ["SkipMotion"]),
+        .library(name: "SkipMotion", type: .dynamic, targets: ["SkipMotion"]),
     ],
     dependencies: [
-        .package(url: "https://source.skip.tools/skip.git", from: "0.8.46"),
-        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.9.5"),
+        .package(url: "https://source.skip.tools/skip.git", from: "0.9.4"),
+        .package(url: "https://source.skip.tools/skip-ui.git", from: "0.10.2"),
         .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.3.3"),
     ],
     targets: [
