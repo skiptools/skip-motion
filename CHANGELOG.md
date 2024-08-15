@@ -1,3 +1,10 @@
+## 0.4.0
+
+Released 2024-08-15
+
+  - Disable bounds test case on Android
+  - Fix bounds calculation and test case
+
 ## 0.3.0
 
 Released 2024-07-07
