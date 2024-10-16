@@ -11,7 +11,6 @@ import Foundation
 
 let logger: Logger = Logger(subsystem: "SkipMotion", category: "Tests")
 
-// SKIP INSERT: @org.junit.runner.RunWith(androidx.test.ext.junit.runners.AndroidJUnit4::class)
 @available(macOS 13, macCatalyst 16, iOS 16, tvOS 16, watchOS 8, *)
 final class SkipMotionTests: XCTestCase {
     func testLoadLottie() throws {
