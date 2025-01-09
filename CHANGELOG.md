@@ -1,3 +1,9 @@
+## 0.4.1
+
+Released 2025-01-09
+
+  - Bump lottie-ios to 4.5.1 and lottie-compose to 6.6.2 (#3)
+
 ## 0.4.0
 
 Released 2024-08-15
