@@ -11,7 +11,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://source.skip.tools/skip.git", from: "1.0.4"),
         .package(url: "https://source.skip.tools/skip-ui.git", from: "1.0.0"),
-        .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.5.0"),
+        .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.5.1"),
     ],
     targets: [
     .target(name: "SkipMotion", dependencies: [.product(name: "SkipUI", package: "skip-ui"), .product(name: "Lottie", package: "lottie-ios")], plugins: [.plugin(name: "skipstone", package: "skip")]),
