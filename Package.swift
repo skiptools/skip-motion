@@ -14,7 +14,10 @@ let package = Package(
         .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.5.1"),
     ],
     targets: [
-    .target(name: "SkipMotion", dependencies: [.product(name: "SkipUI", package: "skip-ui"), .product(name: "Lottie", package: "lottie-ios")], plugins: [.plugin(name: "skipstone", package: "skip")]),
+    .target(name: "SkipMotion", dependencies: [
+        .product(name: "SkipUI", package: "skip-ui"),
+        .product(name: "Lottie", package: "lottie-ios", condition: .when(platforms: [.macOS, .iOS, .tvOS, .watchOS, .macCatalyst]))
+    ], plugins: [.plugin(name: "skipstone", package: "skip")]),
     .testTarget(name: "SkipMotionTests", dependencies: [
         "SkipMotion",
         .product(name: "SkipTest", package: "skip")
