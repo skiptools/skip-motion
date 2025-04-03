@@ -12,7 +12,7 @@ settings:
           contents:
             - block: 'create("libs")'
               contents:
-                - 'version("lottie-compose", "6.6.2")'
+                - 'version("lottie-compose", "6.6.4")'
                 - 'library("lottie-compose", "com.airbnb.android", "lottie-compose").versionRef("lottie-compose")'
 
 # the blocks to add to the build.gradle.kts
