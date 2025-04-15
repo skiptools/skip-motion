@@ -1,9 +1,19 @@
 // Copyright 2023–2025 Skip
 // SPDX-License-Identifier: LGPL-3.0-only WITH LGPL-3.0-linking-exception
-#if !SKIP_BRIDGE
+//#if !SKIP_BRIDGE
 import Foundation
+#if SKIP_BRIDGE
+import SkipFuseUI
+#else
+#if canImport(OSLog)
 import OSLog
+#endif
+#if canImport(SkipFuseUI) || SKIP
+import SkipFuseUI
+#else
 import SwiftUI
+#endif
+
 #if !SKIP
 import Lottie
 #else
@@ -12,10 +22,10 @@ import com.airbnb.lottie.compose.__
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
-#endif
-import Foundation
+#endif // !SKIP
+#endif // SKIP_BRIDGE
 
-let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
+let logger: Logger = Logger(subsystem: "skip.motion", category: "MotionView")
 
 /// A MotionView embeds an animation in the Lottie JSON format.
 public struct MotionView : View {
@@ -26,12 +36,21 @@ public struct MotionView : View {
     }
 
     public var body: some View {
+        #if SKIP_BRIDGE && os(Android)
+        ComposeView {
+            MotionComposer(lottieData: lottieData)
+        }
+        #else
         try! LottieMotionView(container: LottieContainer(data: lottieData))
         #if SKIP
         .Compose(composectx)
         #endif
+        #endif
     }
 }
+
+#if !SKIP_BRIDGE
+#if !os(Android)
 
 struct LottieMotionView : View {
     let container: LottieContainer
@@ -53,14 +72,45 @@ struct LottieMotionView : View {
     }
     #endif
 }
+#endif // !os(Android)
+#endif // !SKIP_BRIDGE
 
+#if SKIP
+/// Use a ContentComposer to integrate Compose content. This code will be transpiled to Kotlin.
+struct MotionComposer : ContentComposer {
+    let lottieData: Data
+
+    @Composable func Compose(context: ComposeContext) {
+        //androidx.compose.material3.Text("💚", modifier: context.modifier)
+
+        // FIXME: would like to use a NON-BRIDGED LottieContainer here…
+        // let container = LottieContainer(data: lottieData)
+
+        let compositionResult = try LottieCompositionFactory.fromJsonInputStreamSync(lottieData.platformData.inputStream(), nil)
+
+        guard let composition = compositionResult.getValue() else {
+            throw compositionResult.getException() ?? IllegalArgumentException("Unable to load composition from data")
+        }
+
+        let contentContext = context.content()
+        ComposeContainer(modifier: context.modifier) { modifier in
+            LottieAnimation(composition,
+                            modifier: modifier.fillMaxSize(),
+                            iterations: LottieConstants.IterateForever)
+        }
+    }
+
+}
+#endif
+
+#if !SKIP_BRIDGE
 /// A container for Lottie data, which is an After Effects/Bodymovin JSON composition model.
 ///
 /// This is the serialized model from which the animation will be created. It is designed to be stateless, cacheable, and shareable.
 /// The format is described at [https://lottie.github.io/lottie-spec/](https://lottie.github.io/lottie-spec/).
 ///
 /// In Swift, this wraps a `Lottie.LottieAnimation` and on Android it wraps a `com.airbnb.lottie.LottieComposition`.
-public struct LottieContainer {
+/* SKIP @nobridge */public final class LottieContainer {
     #if !SKIP
     let lottieAnimation: LottieAnimation
     #else
@@ -105,6 +155,7 @@ public struct LottieContainer {
         #endif
     }
 
+    // SKIP @nobridge
     public var bounds: CGRect {
         #if !SKIP
         lottieAnimation.bounds
@@ -119,3 +170,4 @@ public struct LottieContainer {
     }
 }
 #endif
+//#endif
