@@ -1,7 +1,8 @@
 # Configuration file for https://skip.tools project
 
-#skip:
-#  package: 'skip.motion'
+skip:
+  mode: 'transpiled'
+  bridging: true
 
 # the blocks to add to the settings.gradle.kts
 settings:

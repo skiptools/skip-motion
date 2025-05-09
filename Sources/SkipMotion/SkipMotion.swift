@@ -19,34 +19,39 @@ let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
 
 /// A MotionView embeds an animation in the Lottie JSON format.
 public struct MotionView : View {
-    let lottieData: Data
+    let lottieContainer: LottieContainer?
 
     public init(lottie lottieData: Data) {
-        self.lottieData = lottieData
+        var lottieContainer: LottieContainer? = nil
+        do {
+            lottieContainer = try LottieContainer(data: lottieData)
+        } catch {
+            logger.error("Unable to parse Lottie data: \(error)")
+        }
+        self.lottieContainer = lottieContainer
     }
 
-    public var body: some View {
-        try! LottieMotionView(container: LottieContainer(data: lottieData))
-        #if SKIP
-        .Compose(composectx)
-        #endif
+    public init(lottie lottieContainer: LottieContainer) {
+        self.lottieContainer = lottieContainer
     }
-}
-
-struct LottieMotionView : View {
-    let container: LottieContainer
 
     #if !SKIP
-    var body: some View {
-        LottieView(animation: container.lottieAnimation)
-            .resizable()
-            .playing(loopMode: .loop)
+    public var body: some View {
+        if let lottieContainer {
+            LottieView(animation: lottieContainer.lottieAnimation)
+                .resizable()
+                .playing(loopMode: .loop)
+        }
     }
     #else
+    // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
+        guard let lottieContainer else {
+            return
+        }
         let contentContext = context.content()
         ComposeContainer(modifier: context.modifier) { modifier in
-            LottieAnimation(container.lottieComposition,
+            LottieAnimation(lottieContainer.lottieComposition,
                             modifier: modifier.fillMaxSize(),
                             iterations: LottieConstants.IterateForever)
         }
@@ -105,6 +110,7 @@ public struct LottieContainer {
         #endif
     }
 
+    // SKIP @nobridge
     public var bounds: CGRect {
         #if !SKIP
         lottieAnimation.bounds
