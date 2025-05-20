@@ -110,6 +110,14 @@ public struct LottieContainer {
         #endif
     }
 
+    public var width: Double {
+        bounds.width
+    }
+
+    public var height: Double {
+        bounds.height
+    }
+
     // SKIP @nobridge
     public var bounds: CGRect {
         #if !SKIP
