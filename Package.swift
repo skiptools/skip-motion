@@ -1,5 +1,4 @@
 // swift-tools-version: 5.9
-import Foundation
 import PackageDescription
 
 let package = Package(
@@ -26,7 +25,7 @@ let package = Package(
     ]
 )
 
-if ProcessInfo.processInfo.environment["SKIP_BRIDGE"] ?? "0" != "0" {
+if Context.environment["SKIP_BRIDGE"] ?? "0" != "0" {
     package.dependencies += [.package(url: "https://source.skip.tools/skip-fuse-ui.git", "0.0.0"..<"2.0.0")]
     package.targets.forEach({ target in
         target.dependencies += [.product(name: "SkipFuseUI", package: "skip-fuse-ui")]
