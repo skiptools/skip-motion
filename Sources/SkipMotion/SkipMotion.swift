@@ -65,7 +65,7 @@ public struct MotionView : View {
 /// The format is described at [https://lottie.github.io/lottie-spec/](https://lottie.github.io/lottie-spec/).
 ///
 /// In Swift, this wraps a `Lottie.LottieAnimation` and on Android it wraps a `com.airbnb.lottie.LottieComposition`.
-public struct LottieContainer {
+public struct LottieContainer : Sendable {
     #if !SKIP
     let lottieAnimation: LottieAnimation
     #else
@@ -107,6 +107,14 @@ public struct LottieContainer {
         lottieAnimation.endFrame
         #else
         lottieComposition.endFrame.toDouble()
+        #endif
+    }
+
+    public var framerate: Double {
+        #if !SKIP
+        lottieAnimation.framerate
+        #else
+        lottieComposition.getFrameRate().toDouble()
         #endif
     }
 
