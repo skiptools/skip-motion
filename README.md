@@ -20,7 +20,7 @@ Example:
 
 ```swift
 import Foundation
-import SkipFuseUI
+import SwiftUI
 import SkipMotion
 
 struct ContentView: View {
