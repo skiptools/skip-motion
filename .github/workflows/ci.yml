@@ -14,3 +14,10 @@ permissions:
 jobs:
   call-workflow:
     uses: skiptools/actions/.github/workflows/skip-framework.yml@v1
+    with:
+      # there is an error with building Lottie iOS in Release mode
+      # with the OSS toolchain
+      # 4.	While evaluating request IRGenRequest(IR Generation for file "/Users/runner/work/skip-motion/skip-motion/.build/checkouts/lottie-ios/Sources/Public/DynamicProperties/AnyValueProvider.swift")
+      # 5.	While emitting IR SIL function "@$s6Lottie13ValueProviderPAAE17typeErasedStorageAA03AnybcF0Ovg".
+      # for getter for typeErasedStorage (at /Users/runner/work/skip-motion/skip-motion/.build/checkouts/lottie-ios/Sources/Public/DynamicProperties/AnyValueProvider.swift:49:14)
+      run-export: false
