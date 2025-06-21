@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 #endif
-import Foundation
 
 let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
 
