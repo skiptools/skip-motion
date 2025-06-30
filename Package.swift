@@ -9,9 +9,9 @@ let package = Package(
         .library(name: "SkipMotion", targets: ["SkipMotion"]),
     ],
     dependencies: [
-        .package(url: "https://source.skip.tools/skip.git", from: "1.2.18"),
-        .package(url: "https://source.skip.tools/skip-ui.git", from: "1.17.2"),
-        .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.5.1"),
+        .package(url: "https://source.skip.tools/skip.git", from: "1.6.2"),
+        .package(url: "https://source.skip.tools/skip-ui.git", from: "1.33.1"),
+        .package(url: "https://github.com/airbnb/lottie-ios.git", from: "4.5.2"),
     ],
     targets: [
     .target(name: "SkipMotion", dependencies: [
