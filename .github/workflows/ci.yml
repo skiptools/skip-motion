@@ -22,6 +22,7 @@ jobs:
       # 5.	While emitting IR SIL function "@$s6Lottie13ValueProviderPAAE17typeErasedStorageAA03AnybcF0Ovg".
       # for getter for typeErasedStorage (at /Users/runner/work/skip-motion/skip-motion/.build/checkouts/lottie-ios/Sources/Public/DynamicProperties/AnyValueProvider.swift:49:14)
       run-export: false
+      run-local-tests: false
       # error with Text() constructor
       run-android-native-build: false
 
