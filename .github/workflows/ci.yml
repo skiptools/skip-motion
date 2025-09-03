@@ -15,7 +15,7 @@ jobs:
   call-workflow:
     uses: skiptools/actions/.github/workflows/skip-framework.yml@v1
     with:
-      #runs-on: "['macos-15']"
+      runs-on: "['macos-15']"
       # there is an error with building Lottie iOS in Release mode
       # with the OSS toolchain
       # 4.	While evaluating request IRGenRequest(IR Generation for file "/Users/runner/work/skip-motion/skip-motion/.build/checkouts/lottie-ios/Sources/Public/DynamicProperties/AnyValueProvider.swift")
