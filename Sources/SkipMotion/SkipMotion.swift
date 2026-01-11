@@ -19,8 +19,9 @@ let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
 /// A MotionView embeds an animation in the Lottie JSON format.
 public struct MotionView : View {
     let lottieContainer: LottieContainer?
+    let animationSpeed: Double
 
-    public init(lottie lottieData: Data) {
+    public init(lottie lottieData: Data, animationSpeed: Double = 1.0) {
         var lottieContainer: LottieContainer? = nil
         do {
             lottieContainer = try LottieContainer(data: lottieData)
@@ -28,10 +29,12 @@ public struct MotionView : View {
             logger.error("Unable to parse Lottie data: \(error)")
         }
         self.lottieContainer = lottieContainer
+        self.animationSpeed = animationSpeed
     }
 
-    public init(lottie lottieContainer: LottieContainer) {
+    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0) {
         self.lottieContainer = lottieContainer
+        self.animationSpeed = animationSpeed
     }
 
     #if !SKIP
@@ -40,6 +43,7 @@ public struct MotionView : View {
             LottieView(animation: lottieContainer.lottieAnimation)
                 .resizable()
                 .playing(loopMode: .loop)
+                .animationSpeed(animationSpeed)
         }
     }
     #else
@@ -52,7 +56,8 @@ public struct MotionView : View {
         ComposeContainer(modifier: context.modifier) { modifier in
             LottieAnimation(lottieContainer.lottieComposition,
                             modifier: modifier.fillMaxSize(),
-                            iterations: LottieConstants.IterateForever)
+                            iterations: LottieConstants.IterateForever,
+                            speed: animationSpeed.toFloat())
         }
     }
     #endif
