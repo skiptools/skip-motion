@@ -106,99 +106,33 @@ public struct MotionView : View {
         }
     }
 
+    private var playbackState: LottiePlaybackMode {
+        if isPlaying {
+            if let from = fromProgress, let to = toProgress, from < to {
+                return .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
+            } else {
+                return .playing(.toProgress(1, loopMode: lottieLoopMode))
+            }
+        } else if let progress = currentProgress {
+            return .paused(at: .progress(progress))
+        } else if let frame = currentFrame {
+            return .paused(at: .frame(frame))
+        } else {
+            return .paused
+        }
+    }
+
     public var body: some View {
         if let lottieContainer {
-            if isPlaying {
-                if let from = fromProgress, let to = toProgress, from < to {
-                    // Play with progress range (only if from < to)
-                    let lottieView = LottieView(animation: lottieContainer.lottieAnimation)
-                        .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                    if let onComplete {
-                        switch contentMode {
-                        case .fit:
-                            lottieView.animationDidFinish { finished in onComplete(finished) }
-                        case .fill:
-                            lottieView.animationDidFinish { finished in onComplete(finished) }.scaledToFill()
-                        }
-                    } else {
-                        switch contentMode {
-                        case .fit:
-                            lottieView
-                        case .fill:
-                            lottieView.scaledToFill()
-                        }
-                    }
-                } else {
-                    // Play full animation
-                    let lottieView = LottieView(animation: lottieContainer.lottieAnimation)
-                        .playing(loopMode: lottieLoopMode)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                    if let onComplete {
-                        switch contentMode {
-                        case .fit:
-                            lottieView.animationDidFinish { finished in onComplete(finished) }
-                        case .fill:
-                            lottieView.animationDidFinish { finished in onComplete(finished) }.scaledToFill()
-                        }
-                    } else {
-                        switch contentMode {
-                        case .fit:
-                            lottieView
-                        case .fill:
-                            lottieView.scaledToFill()
-                        }
-                    }
-                }
-            } else if let progress = currentProgress {
-                switch contentMode {
-                case .fit:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentProgress(progress)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                case .fill:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentProgress(progress)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                        .scaledToFill()
-                }
-            } else if let frame = currentFrame {
-                switch contentMode {
-                case .fit:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentFrame(frame)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                case .fill:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentFrame(frame)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                        .scaledToFill()
-                }
-            } else {
-                switch contentMode {
-                case .fit:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .paused()
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                case .fill:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .paused()
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                        .scaledToFill()
-                }
-            }
+            LottieView(animation: lottieContainer.lottieAnimation)
+                .playbackMode(playbackState)
+                .animationSpeed(animationSpeed)
+                .animationDidFinishOptional(onComplete)
+                .resizable()
+                .scaledToFillOptional(contentMode == .fill)
         }
     }
     #else
-    // SKIP @nobridge
     private var iterations: Int {
         switch loopMode {
         case .playOnce:
@@ -212,7 +146,6 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var reverseOnRepeat: Bool {
         switch loopMode {
         case .autoReverse:
@@ -224,7 +157,6 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var composeContentScale: ContentScale {
         switch contentMode {
         case .fit:
@@ -234,14 +166,13 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var clipSpec: LottieClipSpec? {
         if let from = fromProgress, let to = toProgress, from < to {
             return LottieClipSpec.Progress(min: from.toFloat(), max: to.toFloat())
         }
         return nil
     }
-
+    
     // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
@@ -388,4 +319,27 @@ public struct LottieContainer : Sendable {
         #endif
     }
 }
+
+#if !SKIP
+private extension LottieView {
+    func animationDidFinishOptional(_ handler: ((Bool) -> Void)?) -> Self {
+        if let handler {
+            return self.animationDidFinish { finished in handler(finished) }
+        } else {
+            return self
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func scaledToFillOptional(_ condition: Bool) -> some View {
+        if condition {
+            self.scaledToFill()
+        } else {
+            self
+        }
+    }
+}
+#endif
 #endif
