@@ -16,12 +16,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 
 let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
 
+/// Defines animation loop behavior.
+public enum MotionLoopMode: Hashable, Sendable {
+    /// Animation is played once then stops.
+    case playOnce
+    /// Animation will loop from beginning to end until stopped.
+    case loop
+    /// Animation will play forward, then backwards and loop until stopped.
+    case autoReverse
+    /// Animation will loop from beginning to end up to defined amount of times.
+    case `repeat`(Int)
+    /// Animation will play forward, then backwards a defined amount of times.
+    case repeatBackwards(Int)
+}
+
 /// A MotionView embeds an animation in the Lottie JSON format.
 public struct MotionView : View {
     let lottieContainer: LottieContainer?
     let animationSpeed: Double
+    let loopMode: MotionLoopMode
+    let isPlaying: Bool
 
-    public init(lottie lottieData: Data, animationSpeed: Double = 1.0) {
+    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true) {
         var lottieContainer: LottieContainer? = nil
         do {
             lottieContainer = try LottieContainer(data: lottieData)
@@ -30,23 +46,75 @@ public struct MotionView : View {
         }
         self.lottieContainer = lottieContainer
         self.animationSpeed = animationSpeed
+        self.loopMode = loopMode
+        self.isPlaying = isPlaying
     }
 
-    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0) {
+    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true) {
         self.lottieContainer = lottieContainer
         self.animationSpeed = animationSpeed
+        self.loopMode = loopMode
+        self.isPlaying = isPlaying
     }
 
     #if !SKIP
+    private var lottieLoopMode: LottieLoopMode {
+        switch loopMode {
+        case .playOnce:
+            return .playOnce
+        case .loop:
+            return .loop
+        case .autoReverse:
+            return .autoReverse
+        case .repeat(let count):
+            return .repeat(Float(count))
+        case .repeatBackwards(let count):
+            return .repeatBackwards(Float(count))
+        }
+    }
+
     public var body: some View {
         if let lottieContainer {
-            LottieView(animation: lottieContainer.lottieAnimation)
-                .resizable()
-                .playing(loopMode: .loop)
-                .animationSpeed(animationSpeed)
+            if isPlaying {
+                LottieView(animation: lottieContainer.lottieAnimation)
+                    .resizable()
+                    .playing(loopMode: lottieLoopMode)
+                    .animationSpeed(animationSpeed)
+            } else {
+                LottieView(animation: lottieContainer.lottieAnimation)
+                    .resizable()
+                    .paused()
+                    .animationSpeed(animationSpeed)
+            }
         }
     }
     #else
+    // SKIP @nobridge
+    private var iterations: Int {
+        switch loopMode {
+        case .playOnce:
+            return 1
+        case .loop, .autoReverse:
+            return LottieConstants.IterateForever
+        case .repeat(let count):
+            return count
+        case .repeatBackwards(let count):
+            return count
+        }
+    }
+
+    // SKIP @nobridge
+    private var reverseOnRepeat: Bool {
+        switch loopMode {
+        case .autoReverse:
+            return true
+        case .repeatBackwards:
+            return true
+        default:
+            return false
+        }
+    }
+
     // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
@@ -56,8 +124,10 @@ public struct MotionView : View {
         ComposeContainer(modifier: context.modifier) { modifier in
             LottieAnimation(lottieContainer.lottieComposition,
                             modifier: modifier.fillMaxSize(),
-                            iterations: LottieConstants.IterateForever,
-                            speed: animationSpeed.toFloat())
+                            isPlaying: isPlaying,
+                            iterations: iterations,
+                            speed: animationSpeed.toFloat(),
+                            reverseOnRepeat: reverseOnRepeat)
         }
     }
     #endif
