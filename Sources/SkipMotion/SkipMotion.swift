@@ -46,8 +46,11 @@ public struct MotionView : View {
     let loopMode: MotionLoopMode
     let isPlaying: Bool
     let contentMode: MotionContentMode
+    let currentProgress: Double?
+    let fromProgress: Double?
+    let toProgress: Double?
 
-    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit) {
+    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil) {
         var lottieContainer: LottieContainer? = nil
         do {
             lottieContainer = try LottieContainer(data: lottieData)
@@ -59,14 +62,20 @@ public struct MotionView : View {
         self.loopMode = loopMode
         self.isPlaying = isPlaying
         self.contentMode = contentMode
+        self.currentProgress = currentProgress
+        self.fromProgress = fromProgress
+        self.toProgress = toProgress
     }
 
-    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit) {
+    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil) {
         self.lottieContainer = lottieContainer
         self.animationSpeed = animationSpeed
         self.loopMode = loopMode
         self.isPlaying = isPlaying
         self.contentMode = contentMode
+        self.currentProgress = currentProgress
+        self.fromProgress = fromProgress
+        self.toProgress = toProgress
     }
 
     #if !SKIP
@@ -88,15 +97,47 @@ public struct MotionView : View {
     public var body: some View {
         if let lottieContainer {
             if isPlaying {
+                if let from = fromProgress, let to = toProgress, from < to {
+                    // Play with progress range (only if from < to)
+                    switch contentMode {
+                    case .fit:
+                        LottieView(animation: lottieContainer.lottieAnimation)
+                            .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
+                            .animationSpeed(animationSpeed)
+                            .resizable()
+                    case .fill:
+                        LottieView(animation: lottieContainer.lottieAnimation)
+                            .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
+                            .animationSpeed(animationSpeed)
+                            .resizable()
+                            .scaledToFill()
+                    }
+                } else {
+                    // Play full animation
+                    switch contentMode {
+                    case .fit:
+                        LottieView(animation: lottieContainer.lottieAnimation)
+                            .playing(loopMode: lottieLoopMode)
+                            .animationSpeed(animationSpeed)
+                            .resizable()
+                    case .fill:
+                        LottieView(animation: lottieContainer.lottieAnimation)
+                            .playing(loopMode: lottieLoopMode)
+                            .animationSpeed(animationSpeed)
+                            .resizable()
+                            .scaledToFill()
+                    }
+                }
+            } else if let progress = currentProgress {
                 switch contentMode {
                 case .fit:
                     LottieView(animation: lottieContainer.lottieAnimation)
-                        .playing(loopMode: lottieLoopMode)
+                        .currentProgress(progress)
                         .animationSpeed(animationSpeed)
                         .resizable()
                 case .fill:
                     LottieView(animation: lottieContainer.lottieAnimation)
-                        .playing(loopMode: lottieLoopMode)
+                        .currentProgress(progress)
                         .animationSpeed(animationSpeed)
                         .resizable()
                         .scaledToFill()
@@ -156,19 +197,37 @@ public struct MotionView : View {
     }
 
     // SKIP @nobridge
+    private var clipSpec: LottieClipSpec? {
+        if let from = fromProgress, let to = toProgress, from < to {
+            return LottieClipSpec.Progress(min: from.toFloat(), max: to.toFloat())
+        }
+        return nil
+    }
+
+    // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
             return
         }
         let contentContext = context.content()
         ComposeContainer(modifier: context.modifier) { modifier in
-            LottieAnimation(lottieContainer.lottieComposition,
-                            modifier: modifier.fillMaxSize(),
-                            isPlaying: isPlaying,
-                            iterations: iterations,
-                            speed: animationSpeed.toFloat(),
-                            reverseOnRepeat: reverseOnRepeat,
-                            contentScale: composeContentScale)
+            if !isPlaying, let progress = currentProgress {
+                // When paused with a specific progress, use the progress-based overload
+                LottieAnimation(lottieContainer.lottieComposition,
+                                progress: { progress.toFloat() },
+                                modifier: modifier.fillMaxSize(),
+                                contentScale: composeContentScale)
+            } else {
+                // Normal animated playback (with optional clip spec)
+                LottieAnimation(lottieContainer.lottieComposition,
+                                modifier: modifier.fillMaxSize(),
+                                isPlaying: isPlaying,
+                                iterations: iterations,
+                                speed: animationSpeed.toFloat(),
+                                reverseOnRepeat: reverseOnRepeat,
+                                clipSpec: clipSpec,
+                                contentScale: composeContentScale)
+            }
         }
     }
     #endif
