@@ -12,6 +12,7 @@ import com.airbnb.lottie.compose.__
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.layout.ContentScale
 #endif
 
 let logger: Logger = Logger(subsystem: "SkipMotion", category: "MotionView")
@@ -30,14 +31,23 @@ public enum MotionLoopMode: Hashable, Sendable {
     case repeatBackwards(Int)
 }
 
+/// Defines how the animation content is scaled within its bounds.
+public enum MotionContentMode: Hashable, Sendable {
+    /// Scale the animation to fit within the bounds while preserving aspect ratio.
+    case fit
+    /// Scale the animation to fill the bounds while preserving aspect ratio, cropping if needed.
+    case fill
+}
+
 /// A MotionView embeds an animation in the Lottie JSON format.
 public struct MotionView : View {
     let lottieContainer: LottieContainer?
     let animationSpeed: Double
     let loopMode: MotionLoopMode
     let isPlaying: Bool
+    let contentMode: MotionContentMode
 
-    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true) {
+    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit) {
         var lottieContainer: LottieContainer? = nil
         do {
             lottieContainer = try LottieContainer(data: lottieData)
@@ -48,13 +58,15 @@ public struct MotionView : View {
         self.animationSpeed = animationSpeed
         self.loopMode = loopMode
         self.isPlaying = isPlaying
+        self.contentMode = contentMode
     }
 
-    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true) {
+    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit) {
         self.lottieContainer = lottieContainer
         self.animationSpeed = animationSpeed
         self.loopMode = loopMode
         self.isPlaying = isPlaying
+        self.contentMode = contentMode
     }
 
     #if !SKIP
@@ -76,15 +88,33 @@ public struct MotionView : View {
     public var body: some View {
         if let lottieContainer {
             if isPlaying {
-                LottieView(animation: lottieContainer.lottieAnimation)
-                    .resizable()
-                    .playing(loopMode: lottieLoopMode)
-                    .animationSpeed(animationSpeed)
+                switch contentMode {
+                case .fit:
+                    LottieView(animation: lottieContainer.lottieAnimation)
+                        .playing(loopMode: lottieLoopMode)
+                        .animationSpeed(animationSpeed)
+                        .resizable()
+                case .fill:
+                    LottieView(animation: lottieContainer.lottieAnimation)
+                        .playing(loopMode: lottieLoopMode)
+                        .animationSpeed(animationSpeed)
+                        .resizable()
+                        .scaledToFill()
+                }
             } else {
-                LottieView(animation: lottieContainer.lottieAnimation)
-                    .resizable()
-                    .paused()
-                    .animationSpeed(animationSpeed)
+                switch contentMode {
+                case .fit:
+                    LottieView(animation: lottieContainer.lottieAnimation)
+                        .paused()
+                        .animationSpeed(animationSpeed)
+                        .resizable()
+                case .fill:
+                    LottieView(animation: lottieContainer.lottieAnimation)
+                        .paused()
+                        .animationSpeed(animationSpeed)
+                        .resizable()
+                        .scaledToFill()
+                }
             }
         }
     }
@@ -116,6 +146,16 @@ public struct MotionView : View {
     }
 
     // SKIP @nobridge
+    private var composeContentScale: ContentScale {
+        switch contentMode {
+        case .fit:
+            return ContentScale.Fit
+        case .fill:
+            return ContentScale.Crop
+        }
+    }
+
+    // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
             return
@@ -127,7 +167,8 @@ public struct MotionView : View {
                             isPlaying: isPlaying,
                             iterations: iterations,
                             speed: animationSpeed.toFloat(),
-                            reverseOnRepeat: reverseOnRepeat)
+                            reverseOnRepeat: reverseOnRepeat,
+                            contentScale: composeContentScale)
         }
     }
     #endif
