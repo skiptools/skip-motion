@@ -174,6 +174,50 @@ public struct MotionView : View {
     }
     
     // SKIP @nobridge
+    private var iterations: Int {
+        switch loopMode {
+        case .playOnce:
+            return 1
+        case .loop, .autoReverse:
+            return LottieConstants.IterateForever
+        case .repeat(let count):
+            return count
+        case .repeatBackwards(let count):
+            return count
+        }
+    }
+
+    // SKIP @nobridge
+    private var reverseOnRepeat: Bool {
+        switch loopMode {
+        case .autoReverse:
+            return true
+        case .repeatBackwards:
+            return true
+        default:
+            return false
+        }
+    }
+
+    // SKIP @nobridge
+    private var composeContentScale: ContentScale {
+        switch contentMode {
+        case .fit:
+            return ContentScale.Fit
+        case .fill:
+            return ContentScale.Crop
+        }
+    }
+
+    // SKIP @nobridge
+    private var clipSpec: LottieClipSpec? {
+        if let from = fromProgress, let to = toProgress, from < to {
+            return LottieClipSpec.Progress(min: from.toFloat(), max: to.toFloat())
+        }
+        return nil
+    }
+
+    // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
             return
