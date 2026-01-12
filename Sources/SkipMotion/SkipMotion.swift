@@ -10,6 +10,9 @@ import Lottie
 import com.airbnb.lottie.__
 import com.airbnb.lottie.compose.__
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.layout.ContentScale
@@ -49,8 +52,11 @@ public struct MotionView : View {
     let currentProgress: Double?
     let fromProgress: Double?
     let toProgress: Double?
+    let enableMergePaths: Bool
+    let currentFrame: CGFloat?
+    let onComplete: ((Bool) -> Void)?
 
-    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil) {
+    public init(lottie lottieData: Data, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil, enableMergePaths: Bool = false, currentFrame: CGFloat? = nil, onComplete: ((Bool) -> Void)? = nil) {
         var lottieContainer: LottieContainer? = nil
         do {
             lottieContainer = try LottieContainer(data: lottieData)
@@ -65,9 +71,12 @@ public struct MotionView : View {
         self.currentProgress = currentProgress
         self.fromProgress = fromProgress
         self.toProgress = toProgress
+        self.enableMergePaths = enableMergePaths
+        self.currentFrame = currentFrame
+        self.onComplete = onComplete
     }
 
-    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil) {
+    public init(lottie lottieContainer: LottieContainer, animationSpeed: Double = 1.0, loopMode: MotionLoopMode = .loop, isPlaying: Bool = true, contentMode: MotionContentMode = .fit, currentProgress: Double? = nil, fromProgress: Double? = nil, toProgress: Double? = nil, enableMergePaths: Bool = false, currentFrame: CGFloat? = nil, onComplete: ((Bool) -> Void)? = nil) {
         self.lottieContainer = lottieContainer
         self.animationSpeed = animationSpeed
         self.loopMode = loopMode
@@ -76,6 +85,9 @@ public struct MotionView : View {
         self.currentProgress = currentProgress
         self.fromProgress = fromProgress
         self.toProgress = toProgress
+        self.enableMergePaths = enableMergePaths
+        self.currentFrame = currentFrame
+        self.onComplete = onComplete
     }
 
     #if !SKIP
@@ -94,73 +106,33 @@ public struct MotionView : View {
         }
     }
 
+    private var playbackState: LottiePlaybackMode {
+        if isPlaying {
+            if let from = fromProgress, let to = toProgress, from < to {
+                return .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
+            } else {
+                return .playing(.toProgress(1, loopMode: lottieLoopMode))
+            }
+        } else if let progress = currentProgress {
+            return .paused(at: .progress(progress))
+        } else if let frame = currentFrame {
+            return .paused(at: .frame(frame))
+        } else {
+            return .paused
+        }
+    }
+
     public var body: some View {
         if let lottieContainer {
-            if isPlaying {
-                if let from = fromProgress, let to = toProgress, from < to {
-                    // Play with progress range (only if from < to)
-                    switch contentMode {
-                    case .fit:
-                        LottieView(animation: lottieContainer.lottieAnimation)
-                            .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
-                            .animationSpeed(animationSpeed)
-                            .resizable()
-                    case .fill:
-                        LottieView(animation: lottieContainer.lottieAnimation)
-                            .playing(.fromProgress(from, toProgress: to, loopMode: lottieLoopMode))
-                            .animationSpeed(animationSpeed)
-                            .resizable()
-                            .scaledToFill()
-                    }
-                } else {
-                    // Play full animation
-                    switch contentMode {
-                    case .fit:
-                        LottieView(animation: lottieContainer.lottieAnimation)
-                            .playing(loopMode: lottieLoopMode)
-                            .animationSpeed(animationSpeed)
-                            .resizable()
-                    case .fill:
-                        LottieView(animation: lottieContainer.lottieAnimation)
-                            .playing(loopMode: lottieLoopMode)
-                            .animationSpeed(animationSpeed)
-                            .resizable()
-                            .scaledToFill()
-                    }
-                }
-            } else if let progress = currentProgress {
-                switch contentMode {
-                case .fit:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentProgress(progress)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                case .fill:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .currentProgress(progress)
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                        .scaledToFill()
-                }
-            } else {
-                switch contentMode {
-                case .fit:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .paused()
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                case .fill:
-                    LottieView(animation: lottieContainer.lottieAnimation)
-                        .paused()
-                        .animationSpeed(animationSpeed)
-                        .resizable()
-                        .scaledToFill()
-                }
-            }
+            LottieView(animation: lottieContainer.lottieAnimation)
+                .playbackMode(playbackState)
+                .animationSpeed(animationSpeed)
+                .animationDidFinishOptional(onComplete)
+                .resizable()
+                .scaledToFillOptional(contentMode == .fill)
         }
     }
     #else
-    // SKIP @nobridge
     private var iterations: Int {
         switch loopMode {
         case .playOnce:
@@ -174,7 +146,6 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var reverseOnRepeat: Bool {
         switch loopMode {
         case .autoReverse:
@@ -186,7 +157,6 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var composeContentScale: ContentScale {
         switch contentMode {
         case .fit:
@@ -196,14 +166,13 @@ public struct MotionView : View {
         }
     }
 
-    // SKIP @nobridge
     private var clipSpec: LottieClipSpec? {
         if let from = fromProgress, let to = toProgress, from < to {
             return LottieClipSpec.Progress(min: from.toFloat(), max: to.toFloat())
         }
         return nil
     }
-
+    
     // SKIP @nobridge
     @Composable override func ComposeContent(context: ComposeContext) {
         guard let lottieContainer else {
@@ -216,7 +185,42 @@ public struct MotionView : View {
                 LottieAnimation(lottieContainer.lottieComposition,
                                 progress: { progress.toFloat() },
                                 modifier: modifier.fillMaxSize(),
-                                contentScale: composeContentScale)
+                                contentScale: composeContentScale,
+                                enableMergePaths: enableMergePaths)
+            } else if !isPlaying, let frame = currentFrame {
+                // When paused with a specific frame, convert to progress
+                let frameProgress = lottieContainer.lottieComposition.getProgressForFrame(frame.toFloat())
+                LottieAnimation(lottieContainer.lottieComposition,
+                                progress: { frameProgress },
+                                modifier: modifier.fillMaxSize(),
+                                contentScale: composeContentScale,
+                                enableMergePaths: enableMergePaths)
+            } else if let onComplete = onComplete {
+                // Use animateLottieCompositionAsState to track completion
+                let animationState = animateLottieCompositionAsState(
+                    composition: lottieContainer.lottieComposition,
+                    isPlaying: isPlaying,
+                    iterations: iterations,
+                    speed: animationSpeed.toFloat(),
+                    reverseOnRepeat: reverseOnRepeat,
+                    clipSpec: clipSpec
+                )
+
+                // Track previous playing state to detect completion
+                let wasPlaying = remember { mutableStateOf(false) }
+                LaunchedEffect(animationState.isPlaying, animationState.isAtEnd) {
+                    if wasPlaying.value && !animationState.isPlaying {
+                        // Animation stopped - finished=true if at end, false if interrupted
+                        onComplete(animationState.isAtEnd)
+                    }
+                    wasPlaying.value = animationState.isPlaying
+                }
+
+                LottieAnimation(lottieContainer.lottieComposition,
+                                progress: { animationState.progress },
+                                modifier: modifier.fillMaxSize(),
+                                contentScale: composeContentScale,
+                                enableMergePaths: enableMergePaths)
             } else {
                 // Normal animated playback (with optional clip spec)
                 LottieAnimation(lottieContainer.lottieComposition,
@@ -226,7 +230,8 @@ public struct MotionView : View {
                                 speed: animationSpeed.toFloat(),
                                 reverseOnRepeat: reverseOnRepeat,
                                 clipSpec: clipSpec,
-                                contentScale: composeContentScale)
+                                contentScale: composeContentScale,
+                                enableMergePaths: enableMergePaths)
             }
         }
     }
@@ -314,4 +319,27 @@ public struct LottieContainer : Sendable {
         #endif
     }
 }
+
+#if !SKIP
+private extension LottieView {
+    func animationDidFinishOptional(_ handler: ((Bool) -> Void)?) -> Self {
+        if let handler {
+            return self.animationDidFinish { finished in handler(finished) }
+        } else {
+            return self
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func scaledToFillOptional(_ condition: Bool) -> some View {
+        if condition {
+            self.scaledToFill()
+        } else {
+            self
+        }
+    }
+}
+#endif
 #endif
