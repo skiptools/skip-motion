@@ -1,11 +1,11 @@
 # SkipMotion
 
-This is a [Skip](https://skip.tools) Swift/Kotlin library project that 
+This is a [Skip](https://skip.dev) Swift/Kotlin library project that 
 provides the ability to play Lottie animations in dual-platform Skip apps
 for iOS and Android.
 
 <video id="intro_video" style="width: 100%" controls autoplay>
-  <source style="width: 100;" src="https://assets.skip.tools/videos/SkipMotionExample.mov" type="video/mp4">
+  <source style="width: 100;" src="https://assets.skip.dev/videos/SkipMotionExample.mov" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
@@ -50,7 +50,7 @@ let package = Package(
         .library(name: "MyProduct", targets: ["MyTarget"]),
     ],
     dependencies: [
-        .package(url: "https://source.skip.tools/skip-motion.git", "0.0.0"..<"2.0.0"),
+        .package(url: "https://source.skip.dev/skip-motion.git", "0.0.0"..<"2.0.0"),
     ],
     targets: [
         .target(name: "MyTarget", dependencies: [
@@ -66,7 +66,7 @@ SkipMotion is in a very early stage, and lack any playback
 controls or other customization of the animations.
 
 You are encouraged to contribute to the project or
-file an [issue](https://source.skip.tools/skip-motion/issues)
+file an [issue](https://source.skip.dev/skip-motion/issues)
 with needs and requests.
 
 ## Size
@@ -76,13 +76,13 @@ size of the release `.ipa` and `.apk` artifacts for your project.
 
 ## Example
 
-See the [LottieDemo](https://source.skip.tools/skipapp-lottiedemo/releases)
+See the [LottieDemo](https://source.skip.dev/skipapp-lottiedemo/releases)
 project for an example of using `SkipMotion` in a Skip App project.
 
 ## Building
 
 This project is a Swift Package Manager module that uses the
-[Skip](https://skip.tools) plugin to transpile Swift into Kotlin.
+[Skip](https://skip.dev) plugin to transpile Swift into Kotlin.
 
 Building the module requires that Skip be installed using 
 [Homebrew](https://brew.sh) with `brew install skiptools/skip/skip`.
@@ -107,7 +107,7 @@ The general flow for contributing to this and any other Skip package is:
 
 1. Fork this repository and enable actions from the "Actions" tab
 2. Check out your fork locally
-3. When developing alongside a Skip app, add the package to a [shared workspace](https://skip.tools/docs/contributing) to see your changes incorporated in the app
+3. When developing alongside a Skip app, add the package to a [shared workspace](https://skip.dev/docs/contributing) to see your changes incorporated in the app
 4. Push your changes to your fork and ensure the CI checks all pass in the Actions tab
 5. Add your name to the Skip [Contributor Agreement](https://github.com/skiptools/clabot-config)
 6. Open a Pull Request from your fork with a description of your changes
